@@ -45,7 +45,7 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                  if x < event.pos[0] < x + 270 and y < event.pos[1] < y + 50:
-                     screen.blit(surf_levels, (0, 0))
+                     screen.blit(surf_levels, (30, 30))
 
 
 
