@@ -142,19 +142,31 @@ def main(map_filename):
             if event.type == pygame.QUIT:
                 terminate()
 
-            keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed()
 
-            if keys[pygame.K_LEFT]:
-                player.rect.x -= 10
+        if keys[pygame.K_LEFT]:
+            player.rect.x -= 5
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.x += 5
 
-            if keys[pygame.K_RIGHT]:
-                player.rect.x += 10
+        if keys[pygame.K_RIGHT]:
+            player.rect.x += 5
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.x -= 5
 
-            if keys[pygame.K_UP]:
-                player.rect.y -= 10
+        if keys[pygame.K_UP]:
+            player.rect.y -= 5
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.y += 5
 
-            if keys[pygame.K_DOWN]:
-                player.rect.y += 10
+        if keys[pygame.K_DOWN]:
+            player.rect.y += 5
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.y -= 5
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -164,7 +176,7 @@ SIZE = WIDTH, HEIGHT = 550, 550
 screen = pygame.display.set_mode(SIZE)
 screen.fill((255, 255, 255))
 tile_width = tile_height = 50
-FPS = 50
+FPS = 25
 clock = pygame.time.Clock()
 
 # основной персонаж
