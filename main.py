@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import random
 
 
 # Загрузка всехкартинок происходит только через эту функцию, она обрабатывает все ошибки, автоматически
@@ -63,10 +64,10 @@ def third_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if lvl1.rect.collidepoint(pos):
-                    return 'lvl1_map.txt'
+                    return '1'
 
                 elif lvl2.rect.collidepoint(pos):
-                    return 'lvl2_map.txt'
+                    return '2'
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -113,6 +114,14 @@ class Player(pygame.sprite.Sprite):
             tile_width * pos_x + 15, tile_height * pos_y + 5)
 
 
+class Fruit(pygame.sprite.Sprite):
+    def __init__(self, image, pos_x, pos_y):
+        super().__init__(player_group, all_fruits)
+        self.image = image
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x + 10, tile_height * pos_y + 10)
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -130,13 +139,24 @@ def generate_level(level):
     return new_player, x, y
 
 
-def main(map_filename):
+def generate_fruits(level, fruit):
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '#':
+                Fruit(pygame.transform.scale(fruit, (30, 30)), x, y)
+
+
+def main(lvl_num):
     screen = pygame.display.set_mode(SIZE)
     screen.fill((0, 0, 0))
-    player, level_x, level_y = generate_level(load_level(map_filename))
+    player, level_x, level_y = generate_level(load_level(f"lvl{lvl_num}_map.txt"))
+    generate_fruits(load_level(f"lvl{lvl_num}_fruits1.txt"), random.choice(list(fruit_images.values())))
+
+    fruits_flag = True
 
     while True:
         all_sprites.draw(screen)
+        all_fruits.draw(screen)
         screen.blit(player_image, (player.rect.x, player.rect.y))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -150,11 +170,19 @@ def main(map_filename):
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
                     player.rect.x += 5
 
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
+
         if keys[pygame.K_RIGHT]:
             player.rect.x += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
                     player.rect.x -= 5
+
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
 
         if keys[pygame.K_UP]:
             player.rect.y -= 5
@@ -162,11 +190,27 @@ def main(map_filename):
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
                     player.rect.y += 5
 
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
+
         if keys[pygame.K_DOWN]:
             player.rect.y += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
                     player.rect.y -= 5
+
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
+
+        if len(all_fruits) == 0 and fruits_flag:
+            generate_fruits(load_level(f"lvl{lvl_num}_fruits2.txt"), random.choice(list(fruit_images.values())))
+            fruits_flag = False
+
+        if len(all_fruits) == 0 and not fruits_flag:
+            terminate()
+
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -197,6 +241,7 @@ level = third_screen()
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
+all_fruits = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 
 # все изображения для карты заносим в словарь
@@ -205,6 +250,14 @@ tile_images = {
     'empty': load_image('snow.png'),
     'ice': load_image('ice2.png')
 }
+fruit_images = {
+    'limon': load_image('fruits\limon.png'),
+    'cherry': load_image('fruits\cherry.png'),
+    'dragon': load_image('fruits\dragon-fruit.png'),
+    'durian': load_image('fruits\durian.png'),
+    'strawberry': load_image('fruits\strawberry.png')
+}
 player_image = load_image('wm3.png')
+
 
 main(level)
