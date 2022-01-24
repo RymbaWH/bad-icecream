@@ -151,6 +151,7 @@ def main(lvl_num):
     screen.fill((0, 0, 0))
     player, level_x, level_y = generate_level(load_level(f"lvl{lvl_num}_map.txt"))
     generate_fruits(load_level(f"lvl{lvl_num}_fruits1.txt"), random.choice(list(fruit_images.values())))
+    flip_im = False
 
     fruits_flag = True
 
@@ -258,6 +259,5 @@ fruit_images = {
     'strawberry': load_image('fruits\strawberry.png')
 }
 player_image = load_image('wm3.png')
-
 
 main(level)
