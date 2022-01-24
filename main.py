@@ -63,10 +63,10 @@ def third_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if lvl1.rect.collidepoint(pos):
-                    return 1
+                    return 'lvl1_map.txt'
 
                 elif lvl2.rect.collidepoint(pos):
-                    return 2
+                    return 'lvl2_map.txt'
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -130,22 +130,33 @@ def generate_level(level):
     return new_player, x, y
 
 
-def main_game():
+def main(map_filename):
     screen = pygame.display.set_mode(SIZE)
     screen.fill((0, 0, 0))
+    player, level_x, level_y = generate_level(load_level(map_filename))
 
     while True:
-        player, level_x, level_y = generate_level(load_level('map.txt'))
+        all_sprites.draw(screen)
+        screen.blit(player_image, (player.rect.x, player.rect.y))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
 
-            if event.type == pygame.KEYDOWN:
-                pass
+            keys = pygame.key.get_pressed()
 
-        all_sprites.draw(screen)
+            if keys[pygame.K_LEFT]:
+                player.rect.x -= 10
 
+            if keys[pygame.K_RIGHT]:
+                player.rect.x += 10
+
+            if keys[pygame.K_UP]:
+                player.rect.y -= 10
+
+            if keys[pygame.K_DOWN]:
+                player.rect.y += 10
         pygame.display.flip()
+        clock.tick(FPS)
 
 
 pygame.init()
@@ -184,4 +195,4 @@ tile_images = {
 }
 player_image = load_image('wm3.png')
 
-main_game()
+main(level)
