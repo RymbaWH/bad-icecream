@@ -11,9 +11,7 @@ def load_image(name, colorkey=None):
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
         raise Exception(f"Файл с изображением '{fullname}' не найден")
-
     image = pygame.image.load(fullname)
-
     if colorkey is not None:
         image = image.convert()
         if colorkey == -1:
@@ -31,21 +29,47 @@ def terminate():
 
 # Инициализация первого окна (заставки)
 def start_screen():
+    screen.fill((255, 255, 255))
     fon = load_image('logo.png')
-    start = Button(WIDTH//2 - 91, 420, 'start.png')
+    start = Button(WIDTH // 2 - 91, 420, 'start.png')
     screen.blit(fon, (20, 0))
     all_sprites.draw(screen)
+
+    snow_list = []
+    for i in range(130):
+        x = random.randrange(0, 550)
+        y = random.randrange(0, 550)
+        snow_list.append([x, y])
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if start.rect.collidepoint(pos):
                     return
+
+        screen.fill((255, 255, 255))
+        screen.blit(fon, (20, 0))
+        all_sprites.draw(screen)
+
+        for i in range(len(snow_list)):
+
+            # нарисовать снежинку
+            pygame.draw.circle(screen, (110, 173, 245), snow_list[i], 3)
+
+            # снежинка вниз на 1
+            snow_list[i][1] += 1
+
+            if snow_list[i][1] > 550:
+                y = random.randrange(-50, -10)
+                snow_list[i][1] = y
+                x = random.randrange(0, 550)
+                snow_list[i][0] = x
+
         pygame.display.flip()
-        clock.tick(FPS)
+        clock.tick(80)
 
 
 # Инициализация второго окна (выбор уровня)
@@ -57,19 +81,46 @@ def third_screen():
     screen.blit(fon, (30, 70))
     all_sprites.draw(screen)
 
+    snow_list = []
+    for i in range(130):
+        x = random.randrange(0, 550)
+        y = random.randrange(0, 550)
+        snow_list.append([x, y])
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if lvl1.rect.collidepoint(pos):
                     return '1'
-
                 elif lvl2.rect.collidepoint(pos):
                     return '2'
+
+                elif 505 < event.pos[0] < 535 and 75 < event.pos[1] < 100:
+                    print(1)
+
+        screen.fill((255, 255, 255))
+        screen.blit(fon, (30, 70))
+        all_sprites.draw(screen)
+
+        for i in range(len(snow_list)):
+
+            # нарисовать снежинку
+            pygame.draw.circle(screen, (110, 173, 245), snow_list[i], 3)
+
+            # снежинка вниз на 1
+            snow_list[i][1] += 1
+
+            if snow_list[i][1] > 550:
+                y = random.randrange(-50, -10)
+                snow_list[i][1] = y
+                x = random.randrange(0, 550)
+                snow_list[i][0] = x
+
         pygame.display.flip()
-        clock.tick(FPS)
+        clock.tick(80)
 
 
 # загружает поля из файла формата txt с именем filename, в результате возвращает list
@@ -83,10 +134,8 @@ def load_level(filename):
     # читаем уровень, убирая символы перевода строки
     with open(filename, 'r') as mapFile:
         level_map = [line.strip() for line in mapFile]
-
     # и подсчитываем максимальную длину
     max_width = max(map(len, level_map))
-
     # дополняем каждую строку пустыми клетками ('.')
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
@@ -151,9 +200,9 @@ def main(lvl_num):
     screen.fill((0, 0, 0))
     player, level_x, level_y = generate_level(load_level(f"lvl{lvl_num}_map.txt"))
     generate_fruits(load_level(f"lvl{lvl_num}_fruits1.txt"), random.choice(list(fruit_images.values())))
-    flip_im = False
 
     fruits_flag = True
+
 
     while True:
         all_sprites.draw(screen)
@@ -162,56 +211,85 @@ def main(lvl_num):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-
         keys = pygame.key.get_pressed()
-
         if keys[pygame.K_LEFT]:
-            player.rect.x -= 5
+            player.rect.x -= 10
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
-                    player.rect.x += 5
+                    player.rect.x += 10
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
 
+        if keys[pygame.K_a]:
+            player.rect.x -= 10
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.x += 10
             for i in all_fruits:
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
         if keys[pygame.K_RIGHT]:
-            player.rect.x += 5
+            player.rect.x += 10
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
-                    player.rect.x -= 5
+                    player.rect.x -= 10
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
 
+        if keys[pygame.K_d]:
+            player.rect.x += 10
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.x -= 10
             for i in all_fruits:
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
         if keys[pygame.K_UP]:
-            player.rect.y -= 5
+            player.rect.y -= 10
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
-                    player.rect.y += 5
+                    player.rect.y += 10
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
 
+        if keys[pygame.K_w]:
+            player.rect.y -= 10
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.y += 10
             for i in all_fruits:
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
         if keys[pygame.K_DOWN]:
-            player.rect.y += 5
+            player.rect.y += 10
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
-                    player.rect.y -= 5
-
+                    player.rect.y -= 10
             for i in all_fruits:
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
+        if keys[pygame.K_s]:
+            player.rect.y += 10
+            for i in all_sprites:
+                if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
+                    player.rect.y -= 10
+            for i in all_fruits:
+                if i.rect.colliderect(player.rect):
+                    all_fruits.remove(i)
+
+
         if len(all_fruits) == 0 and fruits_flag:
             generate_fruits(load_level(f"lvl{lvl_num}_fruits2.txt"), random.choice(list(fruit_images.values())))
             fruits_flag = False
-
         if len(all_fruits) == 0 and not fruits_flag:
             terminate()
-
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -221,30 +299,23 @@ SIZE = WIDTH, HEIGHT = 550, 550
 screen = pygame.display.set_mode(SIZE)
 screen.fill((255, 255, 255))
 tile_width = tile_height = 50
-FPS = 25
+FPS = 20
 clock = pygame.time.Clock()
-
 # основной персонаж
 player = None
-
 # группы спрайтов
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-
 start_screen()
-
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-
 level = third_screen()
-
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 all_fruits = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-
 # все изображения для карты заносим в словарь
 tile_images = {
     'wall': load_image('box.png'),
