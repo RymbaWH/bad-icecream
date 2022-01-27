@@ -4,6 +4,7 @@ import sys
 import random
 
 
+
 # Загрузка всехкартинок происходит только через эту функцию, она обрабатывает все ошибки, автоматически
 # переходит в папку data, в которой теперь мы должны хранить все картинки, поля, звуки и т.д.
 def load_image(name, colorkey=None):
@@ -48,6 +49,7 @@ def start_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if start.rect.collidepoint(pos):
+                    button.play()
                     return
 
         screen.fill((255, 255, 255))
@@ -94,11 +96,16 @@ def third_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if lvl1.rect.collidepoint(pos):
+                    sound.stop()
+                    button.play()
                     return '1'
                 elif lvl2.rect.collidepoint(pos):
+                    sound.stop()
+                    button.play()
                     return '2'
 
                 elif 505 < event.pos[0] < 535 and 75 < event.pos[1] < 100:
+                    pygame.mixer.music.play(1)
                     print(1)
 
         screen.fill((255, 255, 255))
@@ -202,7 +209,7 @@ def main(lvl_num):
     generate_fruits(load_level(f"lvl{lvl_num}_fruits1.txt"), random.choice(list(fruit_images.values())))
 
     fruits_flag = True
-
+    levels_music.play(-1)
 
     while True:
         all_sprites.draw(screen)
@@ -289,18 +296,41 @@ def main(lvl_num):
             generate_fruits(load_level(f"lvl{lvl_num}_fruits2.txt"), random.choice(list(fruit_images.values())))
             fruits_flag = False
         if len(all_fruits) == 0 and not fruits_flag:
-            terminate()
+            levels_music.stop()
+            win.play()
+            #terminate()
         pygame.display.flip()
         clock.tick(FPS)
 
 
 pygame.init()
+pygame.mixer.init()
+
 SIZE = WIDTH, HEIGHT = 550, 550
 screen = pygame.display.set_mode(SIZE)
 screen.fill((255, 255, 255))
 tile_width = tile_height = 50
 FPS = 20
 clock = pygame.time.Clock()
+
+pygame.mixer.music.load('sound.mp3')
+sound = pygame.mixer.Sound("sound.mp3")
+sound.set_volume(0.1)
+sound.play(-1)
+
+pygame.mixer.music.load('music_levels.mp3')
+levels_music = pygame.mixer.Sound("music_levels.mp3")
+levels_music.set_volume(0.1)
+
+pygame.mixer.music.load('button.mp3')
+button = pygame.mixer.Sound("button.mp3")
+button.set_volume(0.5)
+
+pygame.mixer.music.load('win.mp3')
+win = pygame.mixer.Sound("win.mp3")
+button.set_volume(0.5)
+
+
 # основной персонаж
 player = None
 # группы спрайтов
