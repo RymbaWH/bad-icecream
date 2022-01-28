@@ -61,6 +61,7 @@ def start_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if start.rect.collidepoint(pos):
+                    button.play(0)
                     return
 
         screen.fill((255, 255, 255))
@@ -96,8 +97,12 @@ def third_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = pygame.mouse.get_pos()
                 if lvl1.rect.collidepoint(pos):
+                    sound.stop()
+                    button.play(0)
                     return '1'
                 elif lvl2.rect.collidepoint(pos):
+                    sound.stop()
+                    button.play(0)
                     return '2'
 
                 elif 505 < event.pos[0] < 535 and 75 < event.pos[1] < 100:
@@ -110,6 +115,16 @@ def third_screen():
 
         pygame.display.flip()
         clock.tick(80)
+
+
+# Инициализация финального окна (результаты)
+def final_screen():
+    screen.fill((255, 255, 255))
+    win.play()
+    fon = load_image('menu_levels.png')
+    screen.blit(fon, (30, 70))
+
+
 
 
 # загружает поля из файла формата txt с именем filename, в результате возвращает list
@@ -249,6 +264,7 @@ def generate_fruits(level, fruit):
 
 
 def main(lvl_num):
+    levels_music.play(-1)
     screen = pygame.display.set_mode(SIZE)
     screen.fill((0, 0, 0))
     player, level_x, level_y = generate_level(load_level(f"lvl{lvl_num}_map.txt"))
@@ -266,7 +282,8 @@ def main(lvl_num):
             if event.type == pygame.QUIT:
                 terminate()
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+
+        if keys[pygame.K_a]:
             player.rect.x -= 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -275,7 +292,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             player.rect.x += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -284,7 +301,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             player.rect.y -= 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -293,7 +310,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             player.rect.y += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -306,7 +323,8 @@ def main(lvl_num):
             generate_fruits(load_level(f"lvl{lvl_num}_fruits2.txt"), random.choice(list(fruit_images.values())))
             fruits_flag = False
         if len(all_fruits) == 0 and not fruits_flag:
-            terminate()
+            levels_music.stop()
+            final_screen()
 
         for monster in all_monsters:
             monster.update()
@@ -323,12 +341,33 @@ def main(lvl_num):
 
 
 pygame.init()
+pygame.mixer.init()
 SIZE = WIDTH, HEIGHT = 550, 550
 screen = pygame.display.set_mode(SIZE)
 screen.fill((255, 255, 255))
 tile_width = tile_height = 50
 FPS = 20
 clock = pygame.time.Clock()
+
+#музыка
+pygame.mixer.music.load('sound.mp3')
+sound = pygame.mixer.Sound("sound.mp3")
+sound.set_volume(0.1)
+sound.play(-1)
+
+pygame.mixer.music.load('music_levels.mp3')
+levels_music = pygame.mixer.Sound("music_levels.mp3")
+levels_music.set_volume(0.1)
+
+pygame.mixer.music.load('button.mp3')
+button = pygame.mixer.Sound("button.mp3")
+button.set_volume(0.5)
+
+pygame.mixer.music.load('win.mp3')
+win = pygame.mixer.Sound("win.mp3")
+win.set_volume(0.5)
+
+
 # основной персонаж
 player = None
 
