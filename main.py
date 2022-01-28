@@ -2,6 +2,8 @@ import pygame
 import os
 import sys
 import random
+import sqlite3
+import time
 
 
 # Загрузка всехкартинок происходит только через эту функцию, она обрабатывает все ошибки, автоматически
@@ -123,6 +125,12 @@ def final_screen():
     win.play()
     fon = load_image('menu_levels.png')
     screen.blit(fon, (30, 70))
+    bd()
+
+def bd():
+    a = cur.execute("SELECT * FROM results").fetchall()
+    print(a)
+
 
 
 
@@ -324,6 +332,7 @@ def main(lvl_num):
             fruits_flag = False
         if len(all_fruits) == 0 and not fruits_flag:
             levels_music.stop()
+            itog = 1
             final_screen()
 
         for monster in all_monsters:
@@ -334,7 +343,8 @@ def main(lvl_num):
 
             for i in all_players:
                 if pygame.sprite.collide_mask(i, monster) and not keys[pygame.K_g]:
-                    terminate()
+                    itog = 0
+                    final_screen()
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -366,6 +376,12 @@ button.set_volume(0.5)
 pygame.mixer.music.load('win.mp3')
 win = pygame.mixer.Sound("win.mp3")
 win.set_volume(0.5)
+
+#база данных
+con = sqlite3.connect("data_base.db")
+cur = con.cursor()
+
+itog = 0
 
 
 # основной персонаж
