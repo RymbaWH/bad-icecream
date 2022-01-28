@@ -313,7 +313,9 @@ def main(lvl_num):
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.image != player_image and pygame.sprite.collide_mask(i, monster):
                     monster.coef *= -1
-                if i.image == player_image and pygame.sprite.collide_mask(i, monster) and not keys[pygame.K_g]:
+
+            for i in all_players:
+                if pygame.sprite.collide_mask(i, monster) and not keys[pygame.K_g]:
                     terminate()
 
         pygame.display.flip()
