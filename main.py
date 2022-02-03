@@ -64,6 +64,7 @@ def start_screen():
                 pos = pygame.mouse.get_pos()
                 if start.rect.collidepoint(pos):
                     button.play(0)
+                    sound.stop()
                     return
 
         screen.fill((255, 255, 255))
@@ -79,6 +80,7 @@ def start_screen():
 
 # Инициализация второго окна (выбор уровня)
 def third_screen():
+    sound.play(-1)
     screen.fill((255, 255, 255))
     fon = load_image('menu_levels.png')
     lvl1 = Button(70, 150, 'lvl1.png')
@@ -121,17 +123,88 @@ def third_screen():
 
 # Инициализация финального окна (результаты)
 def final_screen():
-    screen.fill((255, 255, 255))
+    finish_time = time.localtime()
     win.play()
+    screen.fill((255, 255, 255))
     fon = load_image('menu_levels.png')
+    get_res = load_image('get_res.png')
     screen.blit(fon, (30, 70))
-    bd()
+    screen.blit(get_res, (190, 300))
 
-def bd():
-    a = cur.execute("SELECT * FROM results").fetchall()
-    print(a)
+    #Частицы
+    clock = pygame.time.Clock()
+
+    black = (0, 0, 0)
+    grey = (128, 128, 128)
+    particles = []
+    for part in range(300):
+        if part % 2 > 0:
+            col = black
+        else:
+            col = grey
+        particles.append(Particle(50, 380, col))
+        particles.append(Particle(510, 380, col))
 
 
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                pos = pygame.mouse.get_pos()
+                if 200 < event.pos[0] < 370 and 305 < event.pos[1] < 355:
+                    bd(finish_time)
+
+                elif 505 < event.pos[0] < 535 and 75 < event.pos[1] < 100:
+                    terminate()
+
+        screen.fill((255, 255, 255))
+        screen.blit(fon, (30, 70))
+
+        for p in particles:
+            p.move()
+            pygame.draw.circle(screen, p.col, (p.x, p.y), 2)
+
+        screen.blit(get_res, (190, 300))
+        pygame.display.flip()
+        clock.tick(80)
+
+
+#база данных
+def bd(finish_time):
+    con = sqlite3.connect("data_base.db")
+    cur = con.cursor()
+
+    # данные для бд
+    today = str(finish_time[2]) + '.' + str(finish_time[1]) + '.' + str(finish_time[0])
+
+    # ввод данных в бд
+    if len(all_fruits) == 0:
+        # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, '30', 'win'))
+        # con.commit()
+        print(1)
+    else:
+        print(0)
+        # if start_time.tm_min == finish_time.tm_min:
+        #     if start_time.tm_sec > finish_time.tm_sec:
+        #         timer = 60 - start_time.tm_sec + finish_time.tm_sec
+        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
+        #         # con.commit()
+        #         print(timer)
+        #     else:
+        #         timer = finish_time.tm_sec - start_time.tm_sec
+        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
+        #         # con.commit()
+        #         print(timer)
+        # else:
+        #     if start_time.tm_sec > finish_time.tm_sec:
+        #         timer = (finish_time.tm_min - start_time.tm_min) * 60 + (60 - start_time.tm_sec + finish_time.tm_sec)
+        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
+        #         # con.commit()
+        #         print(timer)
+        #     else:
+        #         timer = (finish_time.tm_min - start_time.tm_min) * 60 + (finish_time.tm_sec - start_time.tm_sec)
+        #         print(timer)
 
 
 
@@ -235,6 +308,25 @@ class Fruit(pygame.sprite.Sprite):
             tile_width * pos_x + 10, tile_height * pos_y + 10)
 
 
+class Particle():
+    def __init__(self, startx, starty, col):
+        self.x = startx
+        self.y = random.randint(0, starty)
+        self.col = col
+        self.sx = startx
+        self.sy = starty
+
+    def move(self):
+        if self.y < 0:
+            self.x = self.sx
+            self.y = self.sy
+
+        else:
+            self.y -= 1
+
+        self.x += random.randint(-2, 2)
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     monsters = 0
@@ -252,7 +344,7 @@ def generate_level(level):
             elif level[y][x] == '*':
                 Tile('empty', x, y)
                 if monsters == 2:
-                   Monster(x, y, 'x')
+                    Monster(x, y, 'x')
 
                 elif monsters == 1 or monsters == 3:
                     Monster(x, y, 'y')
@@ -332,18 +424,18 @@ def main(lvl_num):
             fruits_flag = False
         if len(all_fruits) == 0 and not fruits_flag:
             levels_music.stop()
-            itog = 1
             final_screen()
 
         for monster in all_monsters:
             monster.update()
             for i in all_sprites:
-                if i.image != tile_images['empty'] and i.image != player_image and pygame.sprite.collide_mask(i, monster):
+                if i.image != tile_images['empty'] and i.image != player_image and pygame.sprite.collide_mask(i,
+                                                                                                              monster):
                     monster.coef *= -1
 
             for i in all_players:
                 if pygame.sprite.collide_mask(i, monster) and not keys[pygame.K_g]:
-                    itog = 0
+                    levels_music.stop()
                     final_screen()
 
         pygame.display.flip()
@@ -359,7 +451,22 @@ tile_width = tile_height = 50
 FPS = 20
 clock = pygame.time.Clock()
 
-#музыка
+# все изобра`жения для карты заносим в словарь
+tile_images = {
+    'wall': load_image('box.png'),
+    'empty': load_image('snow.png'),
+    'ice': load_image('ice2.png')
+}
+fruit_images = {
+    'limon': load_image('fruits\limon.png'),
+    'cherry': load_image('fruits\cherry.png'),
+    'dragon': load_image('fruits\dragon-fruit.png'),
+    'durian': load_image('fruits\durian.png'),
+    'strawberry': load_image('fruits\strawberry.png')
+}
+player_image = load_image('wm3.png')
+
+# музыка
 pygame.mixer.music.load('sound.mp3')
 sound = pygame.mixer.Sound("sound.mp3")
 sound.set_volume(0.1)
@@ -376,13 +483,6 @@ button.set_volume(0.5)
 pygame.mixer.music.load('win.mp3')
 win = pygame.mixer.Sound("win.mp3")
 win.set_volume(0.5)
-
-#база данных
-con = sqlite3.connect("data_base.db")
-cur = con.cursor()
-
-itog = 0
-
 
 # основной персонаж
 player = None
@@ -406,19 +506,5 @@ all_fruits = pygame.sprite.Group()
 all_monsters = pygame.sprite.Group()
 all_players = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-# все изобра`жения для карты заносим в словарь
-tile_images = {
-    'wall': load_image('box.png'),
-    'empty': load_image('snow.png'),
-    'ice': load_image('ice2.png')
-}
-fruit_images = {
-    'limon': load_image('fruits\limon.png'),
-    'cherry': load_image('fruits\cherry.png'),
-    'dragon': load_image('fruits\dragon-fruit.png'),
-    'durian': load_image('fruits\durian.png'),
-    'strawberry': load_image('fruits\strawberry.png')
-}
-player_image = load_image('wm3.png')
 
 main(level)
