@@ -68,7 +68,6 @@ def start_screen():
                     sound.stop()
                     return
 
-
         screen.fill((255, 255, 255))
         screen.blit(fon, (20, 0))
 
@@ -123,91 +122,86 @@ def third_screen():
         clock.tick(80)
 
 
-# Инициализация финального окна (результаты)
-def final_screen():
-    finish_time = time.localtime()
-    win.play()
+def loose_screen():
     screen.fill((255, 255, 255))
     fon = load_image('menu_levels.png')
-    get_res = load_image('get_res.png')
     screen.blit(fon, (30, 70))
-    screen.blit(get_res, (190, 300))
 
-    #Частицы
-    clock = pygame.time.Clock()
+    font = pygame.font.SysFont(None, 80)
+    font2 = pygame.font.SysFont(None, 30)
+    font3 = pygame.font.SysFont(None, 50)
 
-    black = (0, 0, 0)
-    grey = (128, 128, 128)
-    particles = []
-    for part in range(300):
-        if part % 2 > 0:
-            col = black
-        else:
-            col = grey
-        particles.append(Particle(50, 380, col))
-        particles.append(Particle(510, 380, col))
+    text = font.render(str('You loose!'), True, (0, 0, 0))
+    text2 = font2.render(str(f'your time: {game_time} sec'), True, (0, 0, 0))
+    text3 = font3.render(str(f'Play again!'), True, (255, 0, 0))
 
+    btn_rect = text3.get_rect(topleft=(110, 340))
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                pos = pygame.mouse.get_pos()
-                if 200 < event.pos[0] < 370 and 305 < event.pos[1] < 355:
-                    bd(finish_time)
 
-                elif 505 < event.pos[0] < 535 and 75 < event.pos[1] < 100:
-                    terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_rect.collidepoint(event.pos):
+                    return
 
         screen.fill((255, 255, 255))
-        screen.blit(fon, (30, 70))
+        text_rect = text.get_rect(center=screen.get_rect().center)
 
-        for p in particles:
-            p.move()
-            pygame.draw.circle(screen, p.col, (p.x, p.y), 2)
+        screen.blit(fon, (30, 100))
+        screen.blit(text, (110, 180))
+        screen.blit(text2, (110, 260))
+        screen.blit(text3, btn_rect)
 
-        screen.blit(get_res, (190, 300))
         pygame.display.flip()
-        clock.tick(80)
+        clock.tick(25)
 
 
-#база данных
-def bd(finish_time):
-    con = sqlite3.connect("data_base.db")
-    cur = con.cursor()
+# Инициализация финального окна (результаты)
+def win_screen():
+    screen.fill((255, 255, 255))
+    fon = load_image('menu_levels.png')
+    screen.blit(fon, (30, 70))
 
-    # данные для бд
-    today = str(finish_time[2]) + '.' + str(finish_time[1]) + '.' + str(finish_time[0])
+    history = cursor.execute("SELECT time FROM results WHERE status='True'").fetchall()
 
-    # ввод данных в бд
-    if len(all_fruits) == 0:
-        # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, '30', 'win'))
-        # con.commit()
-        print(1)
-    else:
-        print(0)
-        # if start_time.tm_min == finish_time.tm_min:
-        #     if start_time.tm_sec > finish_time.tm_sec:
-        #         timer = 60 - start_time.tm_sec + finish_time.tm_sec
-        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
-        #         # con.commit()
-        #         print(timer)
-        #     else:
-        #         timer = finish_time.tm_sec - start_time.tm_sec
-        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
-        #         # con.commit()
-        #         print(timer)
-        # else:
-        #     if start_time.tm_sec > finish_time.tm_sec:
-        #         timer = (finish_time.tm_min - start_time.tm_min) * 60 + (60 - start_time.tm_sec + finish_time.tm_sec)
-        #         # a = cur.execute("INSERT INTO results(data, time, itog) VALUES(?, ?, ?)", (today, timer, 'lose'))
-        #         # con.commit()
-        #         print(timer)
-        #     else:
-        #         timer = (finish_time.tm_min - start_time.tm_min) * 60 + (finish_time.tm_sec - start_time.tm_sec)
-        #         print(timer)
+    all_time = []
+    for i in history:
+        all_time.append(i[0])
 
+    print(history)
+
+    font = pygame.font.SysFont(None, 80)
+    font2 = pygame.font.SysFont(None, 30)
+    font3 = pygame.font.SysFont(None, 50)
+
+    text = font.render(str('You win!'), True, (0, 0, 0))
+    text2 = font2.render(str(f'your time: {game_time} sec'), True, (0, 0, 0))
+    text3 = font2.render(str(f'best time: {min(all_time)} sec'), True, (0, 0, 0))
+    text4 = font3.render(str(f'Play again!'), True, (255, 0, 0))
+    btn_rect = text4.get_rect(topleft=(110, 340))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_rect.collidepoint(event.pos):
+                    return
+
+        screen.fill((255, 255, 255))
+        text_rect = text.get_rect(center=screen.get_rect().center)
+
+        screen.blit(fon, (30, 100))
+        screen.blit(text, (110, 180))
+        screen.blit(text2, (110, 260))
+        screen.blit(text3, (110, 290))
+        screen.blit(text4, btn_rect)
+
+        pygame.display.flip()
+        clock.tick(25)
 
 
 # загружает поля из файла формата txt с именем filename, в результате возвращает list
@@ -366,9 +360,16 @@ def generate_fruits(level, fruit):
 
 
 def main(lvl_num):
+    global game_time
     levels_music.play(-1)
     screen = pygame.display.set_mode(SIZE)
     screen.fill((0, 0, 0))
+
+    time_delay = 1000
+    timer_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(timer_event, time_delay)
+    counter = 0
+
     player, level_x, level_y = generate_level(load_level(f"lvl{lvl_num}_map.txt"))
     generate_fruits(load_level(f"lvl{lvl_num}_fruits1.txt"), random.choice(list(fruit_images.values())))
 
@@ -383,9 +384,13 @@ def main(lvl_num):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+
+            if event.type == timer_event:
+                counter += 1
+
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             player.rect.x -= 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -394,7 +399,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             player.rect.x += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -403,7 +408,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             player.rect.y -= 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -412,7 +417,7 @@ def main(lvl_num):
                 if i.rect.colliderect(player.rect):
                     all_fruits.remove(i)
 
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             player.rect.y += 5
             for i in all_sprites:
                 if i.image != tile_images['empty'] and i.rect.colliderect(player.rect) and i.image != player_image:
@@ -426,7 +431,10 @@ def main(lvl_num):
             fruits_flag = False
         if len(all_fruits) == 0 and not fruits_flag:
             levels_music.stop()
-            final_screen()
+            game_time = counter
+            cursor.execute(f"INSERT INTO results (time, status) VALUES ('{counter}', 'True');")
+            win_screen()
+            return
 
         for monster in all_monsters:
             monster.update()
@@ -438,7 +446,12 @@ def main(lvl_num):
             for i in all_players:
                 if pygame.sprite.collide_mask(i, monster) and not keys[pygame.K_g]:
                     levels_music.stop()
-                    final_screen()
+
+                    cursor.execute(f"INSERT INTO results (time, status) VALUES ('{counter}', 'False');")
+                    game_time = counter
+
+                    loose_screen()
+                    return
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -495,17 +508,24 @@ player_group = pygame.sprite.Group()
 
 start_screen()
 
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
+game = True
 
-level = third_screen()
+while game:
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
 
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-all_fruits = pygame.sprite.Group()
-all_monsters = pygame.sprite.Group()
-all_players = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
+    level = third_screen()
 
-main(level)
+    all_sprites = pygame.sprite.Group()
+    tiles_group = pygame.sprite.Group()
+    all_fruits = pygame.sprite.Group()
+    all_monsters = pygame.sprite.Group()
+    all_players = pygame.sprite.Group()
+    player_group = pygame.sprite.Group()
+
+    connect = sqlite3.connect("data_base.db")
+    cursor = connect.cursor()
+
+    game_time = 0
+    main(level)
