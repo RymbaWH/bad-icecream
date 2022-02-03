@@ -44,6 +44,7 @@ def terminate():
 
 # Инициализация первого окна (заставки)
 def start_screen():
+    sound.play(-1)
     screen.fill((255, 255, 255))
     fon = load_image('logo.png')
     start = Button(WIDTH // 2 - 91, 420, 'start.png')
@@ -66,6 +67,7 @@ def start_screen():
                     button.play(0)
                     sound.stop()
                     return
+
 
         screen.fill((255, 255, 255))
         screen.blit(fon, (20, 0))
@@ -470,7 +472,6 @@ player_image = load_image('wm3.png')
 pygame.mixer.music.load('sound.mp3')
 sound = pygame.mixer.Sound("sound.mp3")
 sound.set_volume(0.1)
-sound.play(-1)
 
 pygame.mixer.music.load('music_levels.mp3')
 levels_music = pygame.mixer.Sound("music_levels.mp3")
